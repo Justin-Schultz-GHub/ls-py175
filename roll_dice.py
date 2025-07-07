@@ -20,13 +20,16 @@ while True:
 
     http_method = request_line.split()[0]
 
+    parameters = {}
+
     path = request_line.split()[1].split('?')[0]
 
-    parameters = {}
-    queries = request_line.split()[1][2:].split('&')
-    for query in queries:
-        key, value = query.split('=')
-        parameters[key] = value
+    if "?" in request_line.split()[1]:
+        queries = request_line.split()[1].split('?')[1].split('&')
+
+        for query in queries:
+            key, value = query.split('=')
+            parameters[key] = value
 
     # print(queries)
     # print(f'Request Line: {request_line}')
@@ -34,21 +37,24 @@ while True:
     # print(f'Path: {path}')
     # print(f'Parameters: {parameters}')
 
-    response_body = ("<html><head><title>Dice Rolls</title><head><body>"
+    number = int(parameters.get('number', 0))
+
+    response_body = ("<html><head><title>Counter</title><head><body>"
                     f'<h1>HTTP Request Information</h1>'
-                    f'<p>Request Line: {request_line}\n</p>'
-                    f'<p>HTTP Method: {http_method}\n</p>'
-                    f'<p>Path: {path}\n</p>'
-                    f'<p>Parameterss: {parameters}\n</p>'
-                    "<h2>Rolls</h2>"
-                    "<ul>"
+                    f'<p><strong>Request Line: {request_line}\n</strong></p>'
+                    f'<p><strong>HTTP Method: {http_method}\n</strong></p>'
+                    f'<p><strong>Path: {path}\n</strong></p>'
+                    f'<p><strong>Parameters: {parameters}\n</strong></p>'
+                    "<h2>Counter</h2>"
+                    f'<p style="color: red;">The current number is: {number}</p>'
+                    "</body></html>"
                     )
 
-    for i in range(int(parameters['rolls'])):
-        roll = random.randint(1, int(parameters['sides']))
-        response_body += f'<li>Roll: {roll}\n</li>'
+    # for i in range(int(parameters['rolls'])):
+    #     roll = random.randint(1, int(parameters['sides']))
+    #     response_body += f'<li>Roll: {roll}\n</li>'
 
-    response_body += "</ul></body></html>"
+    # response_body += "</ul></body></html>"
 
     response = ('HTTP/1.1 200 OK\r\n'
                 'Content-Type: text/html\r\n'
