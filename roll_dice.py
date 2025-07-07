@@ -34,18 +34,24 @@ while True:
     # print(f'Path: {path}')
     # print(f'Parameters: {parameters}')
 
-    response_body = (f'Request Line: {request_line}\n'
-                    f'HTTP Method: {http_method}\n'
-                    f'Path: {path}\n'
-                    f'Parameterss: {parameters}\n'
+    response_body = ("<html><head><title>Dice Rolls</title><head><body>"
+                    f'<h1>HTTP Request Information</h1>'
+                    f'<p>Request Line: {request_line}\n</p>'
+                    f'<p>HTTP Method: {http_method}\n</p>'
+                    f'<p>Path: {path}\n</p>'
+                    f'<p>Parameterss: {parameters}\n</p>'
+                    "<h2>Rolls</h2>"
+                    "<ul>"
                     )
 
     for i in range(int(parameters['rolls'])):
         roll = random.randint(1, int(parameters['sides']))
-        response_body += f'Roll: {roll}\n'
+        response_body += f'<li>Roll: {roll}\n</li>'
+
+    response_body += "</ul></body></html>"
 
     response = ('HTTP/1.1 200 OK\r\n'
-                'Content-Type: text/plain\r\n'
+                'Content-Type: text/html\r\n'
                 f'Content-Length: {len(response_body)}\r\n'
                 '\r\n'
                 f'{response_body}\n')
