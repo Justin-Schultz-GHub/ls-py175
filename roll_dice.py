@@ -30,12 +30,8 @@ while True:
         for query in queries:
             key, value = query.split('=')
             parameters[key] = value
-
-    # print(queries)
-    # print(f'Request Line: {request_line}')
-    # print(f'HTTP Method: {http_method}')
-    # print(f'Path: {path}')
-    # print(f'Parameters: {parameters}')
+    else:
+        parameters['number'] = '0'
 
     number = int(parameters.get('number', 0))
 
@@ -47,14 +43,11 @@ while True:
                     f'<p><strong>Parameters: {parameters}\n</strong></p>'
                     "<h2>Counter</h2>"
                     f'<p style="color: red;">The current number is: {number}</p>'
+                    f'<a href="?number={number + 1}">Add One</a>'
+                    "&nbsp;&nbsp;"
+                    f'<a href="?number={number - 1}">Subtract One</a>'
                     "</body></html>"
                     )
-
-    # for i in range(int(parameters['rolls'])):
-    #     roll = random.randint(1, int(parameters['sides']))
-    #     response_body += f'<li>Roll: {roll}\n</li>'
-
-    # response_body += "</ul></body></html>"
 
     response = ('HTTP/1.1 200 OK\r\n'
                 'Content-Type: text/html\r\n'
