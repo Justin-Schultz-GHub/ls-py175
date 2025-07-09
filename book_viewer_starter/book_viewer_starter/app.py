@@ -1,27 +1,44 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, g
 
 app = Flask(__name__)
 
+@app.before_request
+def load_contents():
+    with open('book_viewer/data/toc.txt', 'r') as file:
+        g.contents = file.readlines()
+
 @app.route('/')
 def index():
-    with open('book_viewer/data/toc.txt', 'r') as file:
-        contents = file.readlines()
+    return render_template('home.html', contents=g.contents)
 
-    return render_template('home.html', contents=contents)
+@app.route('/chapters/<page_num>')
+def chapter(page_num):
+    chapter_name = g.contents[int(page_num) - 1]
+    chapter_title = f'Chapter {page_num}: {chapter_name}'
 
-@app.route('/chapters/1')
-def chapter1():
-    chapter_title = 'Chapter 1'
-
-    with open('book_viewer/data/toc.txt', 'r') as file:
-        contents = file.readlines()
-    with open('book_viewer/data/chp1.txt', 'r') as file:
-        chapter = file.read()
+    with open(f'book_viewer/data/chp{page_num}.txt') as file:
+        chapter_content = file.read()
 
     return render_template('chapter.html',
                             chapter_title=chapter_title,
-                            contents=contents,
-                            chapter=chapter)
+                            contents=g.contents,
+                            chapter=chapter_content)
+
+@app.route('/show/<name>')
+def show(name):
+    return name
+
+def in_paragraphs(text):
+    paragraphs = text.split('\n\n')
+    formatted_paragraphs = [
+                            f'<p>{paragraph}</p>'
+                            for paragraph in paragraphs
+                            if paragraph
+                            ]
+
+    return ''.join(formatted_paragraphs)
+
+app.jinja_env.filters['in_paragraphs'] = in_paragraphs
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
