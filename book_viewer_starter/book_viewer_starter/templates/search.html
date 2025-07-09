@@ -21,7 +21,7 @@
               <ul>
                   {% for paragraph in result.paragraphs %}
                       <li>
-                          <a href='{{ url_for('chapter', page_num=result.number) }}#paragraph{{ paragraph.para_num }}'>{{ paragraph.text }}</a>
+                          <a href='{{ url_for('chapter', page_num=result.number) }}#paragraph{{ paragraph.para_num }}'>{{ paragraph.text | bold(query) | safe }}</a>
                       </li>
                   {% endfor %}
               </ul>
