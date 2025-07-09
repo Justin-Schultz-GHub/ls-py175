@@ -1,4 +1,4 @@
-from flask import Flask, render_template, g, redirect
+from flask import Flask, render_template, g, redirect, request
 
 app = Flask(__name__)
 
@@ -27,10 +27,6 @@ def chapter(page_num):
     else:
         return render_template('redirect_countdown.html')
 
-@app.route('/show/<name>')
-def show(name):
-    return name
-
 def in_paragraphs(text):
     paragraphs = text.split('\n\n')
     formatted_paragraphs = [
@@ -40,6 +36,26 @@ def in_paragraphs(text):
                             ]
 
     return ''.join(formatted_paragraphs)
+
+def chapters_matching(query):
+    if not query:
+        return []
+
+    results = []
+    for index, name in enumerate(g.contents, start=1):
+        with open(f'book_viewer/data/chp{index}.txt', 'r') as file:
+            chapter_content=file.read()
+        if query.lower() in chapter_content.lower():
+            results.append({'number': index, 'name': name})
+
+    return results
+
+@app.route('/search')
+def search():
+    query = request.args.get('query', '')
+    results = chapters_matching(query) if query else []
+
+    return render_template('search.html', query=query, results=results)
 
 @app.errorhandler(404)
 def page_not_found(_error):
