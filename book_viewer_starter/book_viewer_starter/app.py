@@ -1,4 +1,4 @@
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, redirect
 
 app = Flask(__name__)
 
@@ -13,16 +13,19 @@ def index():
 
 @app.route('/chapters/<page_num>')
 def chapter(page_num):
-    chapter_name = g.contents[int(page_num) - 1]
-    chapter_title = f'Chapter {page_num}: {chapter_name}'
+    if page_num.isdigit() and (1 <= int(page_num) <= len(g.contents)):
+        chapter_name = g.contents[int(page_num) - 1]
+        chapter_title = f'Chapter {page_num}: {chapter_name}'
 
-    with open(f'book_viewer/data/chp{page_num}.txt') as file:
-        chapter_content = file.read()
+        with open(f'book_viewer/data/chp{page_num}.txt') as file:
+            chapter_content = file.read()
 
-    return render_template('chapter.html',
-                            chapter_title=chapter_title,
-                            contents=g.contents,
-                            chapter=chapter_content)
+        return render_template('chapter.html',
+                                chapter_title=chapter_title,
+                                contents=g.contents,
+                                chapter=chapter_content)
+    else:
+        return render_template('redirect_countdown.html')
 
 @app.route('/show/<name>')
 def show(name):
@@ -37,6 +40,10 @@ def in_paragraphs(text):
                             ]
 
     return ''.join(formatted_paragraphs)
+
+@app.errorhandler(404)
+def page_not_found(_error):
+    return render_template('redirect_countdown.html'), 404
 
 app.jinja_env.filters['in_paragraphs'] = in_paragraphs
 
