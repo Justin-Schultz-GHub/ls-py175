@@ -20,10 +20,12 @@ def chapter(page_num):
         with open(f'book_viewer/data/chp{page_num}.txt') as file:
             chapter_content = file.read()
 
+        paragraphs = chapter_content.split('\n\n')
+
         return render_template('chapter.html',
                                 chapter_title=chapter_title,
                                 contents=g.contents,
-                                chapter=chapter_content)
+                                paragraphs=paragraphs)
     else:
         return render_template('redirect_countdown.html')
 
@@ -42,11 +44,21 @@ def chapters_matching(query):
         return []
 
     results = []
+
     for index, name in enumerate(g.contents, start=1):
+        results_dict = {'number': None, 'index': None, 'paragraphs': [],}
+
         with open(f'book_viewer/data/chp{index}.txt', 'r') as file:
             chapter_content=file.read()
-        if query.lower() in chapter_content.lower():
-            results.append({'number': index, 'name': name})
+
+        for para_num, paragraph in enumerate(chapter_content.split('\n\n'), start=1):
+            if query in paragraph.lower():
+                results_dict['number'] = index
+                results_dict['name'] = name
+                results_dict['paragraphs'].append({'text': paragraph, 'para_num': para_num,})
+
+        if results_dict['paragraphs']:
+            results.append(results_dict)
 
     return results
 

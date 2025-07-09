@@ -16,7 +16,16 @@
 
       <ul>
         {% for result in results %}
-          <li><a href="/chapters/{{ result.number }}">{{ result.name }}</a></li>
+          <li>
+              {{ result.name }}
+              <ul>
+                  {% for paragraph in result.paragraphs %}
+                      <li>
+                          <a href='{{ url_for('chapter', page_num=result.number) }}#paragraph{{ paragraph.para_num }}'>{{ paragraph.text }}</a>
+                      </li>
+                  {% endfor %}
+              </ul>
+          </li>
         {% endfor %}
       </ul>
     {% endif %}
