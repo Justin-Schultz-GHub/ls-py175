@@ -3,13 +3,16 @@ import yaml
 
 app = Flask(__name__)
 
+# Setup
 with open('users.yaml', 'r') as file:
     users = yaml.safe_load(file)
     total_users = len(users)
 
+# Helper functions
 def total_interests(users):
     return sum(len(user['interests']) for user in users.values())
 
+# Route handlers
 @app.route('/')
 def index():
     return (render_template('index.html',
