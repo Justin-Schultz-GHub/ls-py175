@@ -1,34 +1,33 @@
 {% extends "layout.html" %}
 
 {% block content %}
-  <h2>{{ user_name.capitalize() }}</h2>
-  <div>
+<h2>{{ user_name.capitalize() }}</h2>
+<div>
+  <ul>
+  {% for key, value in data.items() %}
+    <li>{{ key.capitalize() }}</li>
       <ul>
-
-      {% for key, value in data.items() %}
-        <li>{{ key.capitalize() }}</li>
-          <ul>
-            {% if key == 'interests'%}
-              {% if value %}
-                {% for interest in value %}
-                  <li>{{ interest.capitalize() }}</li>
-                {% endfor %}
-              {% else %}
-                <li>None</li>
-              {% endif %}
-            {% else %}
-              <li>{{ value }}</li>
-            {% endif %}
-          </ul>
-        </li>
-      {% endfor %}
-    </div>
-  <div>
-    {% for user in users %}
-      {% if user != user_name %}
-        <span style="margin-right: 0.5em;"><a href='{{ url_for('user_profile', user_name=user) }}'>{{ user.capitalize() }}</a></span>
-      {% endif %}
-    {% endfor %}
-  </div>
-
+        {% if key == 'interests'%}
+          {% if value %}
+            {% for interest in value %}
+              <li>{{ interest.capitalize() }}</li>
+            {% endfor %}
+          {% else %}
+            <li>None</li>
+          {% endif %}
+        {% else %}
+          <li>{{ value }}</li>
+        {% endif %}
+      </ul>
+    </li>
+  {% endfor %}
+  </ul>
+</div>
+<div>
+  {% for user in users %}
+    {% if user != user_name %}
+      <span style="margin-right: 0.5em;"><a href='{{ url_for('user_profile', user_name=user) }}'>{{ user.capitalize() }}</a></span>
+    {% endif %}
+  {% endfor %}
+</div>
 {% endblock %}
