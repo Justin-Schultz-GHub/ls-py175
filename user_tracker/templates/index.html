@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Welcome to the User Tracker</h2>
+  <div>
+    <a href='{{ url_for('users_list') }}'>
+    <button>View All Users</button>
+    </a>
+  </div>
+
+
+
+{% endblock %}

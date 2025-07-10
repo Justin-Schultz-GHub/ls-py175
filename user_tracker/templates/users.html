@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <div>
+      <ul>
+      {% for user in users %}
+        <li><a href='{{ url_for('user_profile', user_name=user) }}'>{{ user.capitalize() }}</a></li>
+      {% endfor %}
+      </ul>
+  </div>
+
+
+
+{% endblock %}

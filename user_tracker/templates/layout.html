@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+  <head>
+  </head>
+  <body>
+    <h1><a href='{{ url_for('index') }}'>User Tracker</a></h1>
+    {% block content %}
+    {% endblock %}
+
+    <br>
+
+    <footer>There are a total of {{ total_users }} users with a total of {{ total_interests }} interests.</footer>
+  </body>
+</html>
