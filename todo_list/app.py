@@ -34,16 +34,26 @@ def get_lists():
 def create_list():
     title = request.form['list_title'].strip()
 
-    session['lists'].append({
-        'id': str(uuid4()),
-        'title': title,
-        'todos': [],
-    })
+    if any(lst['title'] == title for lst in session['lists']):
+        flash('A todo with this title already exists.', 'error')
 
-    flash('The list has been created.', 'success')
-    session.modified = True
+        return render_template('new_list.html', title=title)
 
-    return redirect(url_for('get_lists'))
+    if 1 <= len(title) <= 100:
+        session['lists'].append({
+            'id': str(uuid4()),
+            'title': title,
+            'todos': [],
+        })
+
+        flash('The list has been created.', 'success')
+        session.modified = True
+
+        return redirect(url_for('get_lists'))
+
+    flash('Todo titles must be between 1 and 100 characters.', 'error')
+
+    return render_template('new_list.html')
 
 if __name__ == "__main__":
     app.run(debug=True, port=8080)
