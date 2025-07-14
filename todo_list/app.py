@@ -1,5 +1,6 @@
 from uuid import uuid4
 from flask import (
+                    abort,
                     flash,
                     Flask,
                     redirect,
@@ -8,7 +9,7 @@ from flask import (
                     session,
                     url_for,
                     )
-from todos.utils import error_for_list_title
+from todos.utils import error_for_list_title, find_list_by_id
 
 app = Flask(__name__)
 app.secret_key='secret1'
@@ -25,6 +26,15 @@ def index():
 @app.route('/lists/new')
 def add_todo_list():
     return render_template('new_list.html')
+
+@app.route('/lists/<list_id>')
+def display_list(list_id):
+    lst = find_list_by_id(list_id, session['lists'])
+
+    if lst:
+        return render_template('list.html', lst=lst)
+
+    abort(404)
 
 @app.route('/lists')
 def get_lists():
