@@ -12,3 +12,10 @@ def find_list_by_id(list_id, lists):
             return lst
 
     return None
+
+def error_for_todo_item_name(todo):
+    return (
+            'Todo names must be between 1 and 100 characters'
+            if not 1 <= len(todo) <= 100
+            else None
+            )

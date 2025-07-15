@@ -9,7 +9,7 @@ from flask import (
                     session,
                     url_for,
                     )
-from todos.utils import error_for_list_title, find_list_by_id
+from todos.utils import error_for_list_title, find_list_by_id, error_for_todo_item_name
 
 app = Flask(__name__)
 app.secret_key='secret1'
@@ -59,6 +59,27 @@ def create_list():
     session.modified = True
 
     return redirect(url_for('get_lists'))
+
+@app.route('/lists/<list_id>/todos', methods=['POST'])
+def create_todo(list_id):
+    todo = request.form['todo'].strip()
+    error = error_for_todo_item_name(todo)
+    lst = find_list_by_id(list_id, session['lists'])
+
+    if error:
+        flash(error, 'error')
+        return render_template('list.html', lst=lst,todo=todo)
+
+    lst['todos'].append({
+        'id': str(uuid4()),
+        'title': todo,
+        'completed': False
+        })
+
+    flash('The todo item has been created.', 'success')
+    session.modified = True
+
+    return redirect(url_for('display_list', list_id=lst['id']))
 
 if __name__ == "__main__":
     app.run(debug=True, port=8080)
