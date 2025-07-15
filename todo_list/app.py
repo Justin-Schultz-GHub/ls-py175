@@ -13,6 +13,7 @@ from todos.utils import (
                         error_for_list_title,
                         find_list_by_id,
                         error_for_todo_item_name,
+                        find_todo_by_id,
                         )
 
 app = Flask(__name__)
@@ -67,16 +68,15 @@ def create_list():
 @app.route('/lists/<list_id>/todos', methods=['POST'])
 def create_todo(list_id):
     todo = request.form['todo'].strip()
-    lst = find_list_by_id(list_id, session['lists'])
 
+    lst = find_list_by_id(list_id, session['lists'])
     if not lst:
         abort(404)
 
     error = error_for_todo_item_name(todo)
-
     if error:
         flash(error, 'error')
-        return render_template('list.html', lst=lst,todo=todo)
+        return render_template('list.html', lst=lst, todo=todo)
 
     lst['todos'].append({
         'id': str(uuid4()),
@@ -88,6 +88,23 @@ def create_todo(list_id):
     session.modified = True
 
     return redirect(url_for('display_list', list_id=lst['id']))
+
+@app.route('/lists/<list_id>/todos/<todo_id>/toggle', methods=['POST'])
+def toggle_todo_completion(list_id, todo_id):
+    lst = find_list_by_id(list_id, session['lists'])
+    if not lst:
+        abort(404)
+
+    todo = find_todo_by_id(todo_id, lst['todos'])
+    if not todo:
+        abort(404)
+
+    todo['completed'] = request.form['completed'] == 'True'
+
+    flash('Todo marked as completed.', 'success')
+    session.modified = True
+
+    return redirect(url_for('display_list', list_id=list_id))
 
 if __name__ == "__main__":
     app.run(debug=True, port=8080)
