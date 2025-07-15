@@ -9,7 +9,11 @@ from flask import (
                     session,
                     url_for,
                     )
-from todos.utils import error_for_list_title, find_list_by_id, error_for_todo_item_name
+from todos.utils import (
+                        error_for_list_title,
+                        find_list_by_id,
+                        error_for_todo_item_name,
+                        )
 
 app = Flask(__name__)
 app.secret_key='secret1'
@@ -63,8 +67,12 @@ def create_list():
 @app.route('/lists/<list_id>/todos', methods=['POST'])
 def create_todo(list_id):
     todo = request.form['todo'].strip()
-    error = error_for_todo_item_name(todo)
     lst = find_list_by_id(list_id, session['lists'])
+
+    if not lst:
+        abort(404)
+
+    error = error_for_todo_item_name(todo)
 
     if error:
         flash(error, 'error')
