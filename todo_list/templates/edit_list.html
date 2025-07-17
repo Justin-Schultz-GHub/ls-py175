@@ -15,14 +15,13 @@
             </ul>
         </header>
     </section>
-    <form action="/lists/{{ lst.id }}/rename" method="post">
+    <form action="{{ url_for('rename_list', list_id=lst.id) }}" method="post">
         <dl>
             <dt>
-                <label for="todo">Enter a new title for the list:</label>
+                <label for="list_title">Enter a new title for the list:</label>
             </dt>
             <dd>
-                <input name="list_title" placeholder="List Title" type="text"
-                    value="{{ request.form['list_title'] }}">
+                <input id="list_title" name="list_title" placeholder="List Title" type="text">
             </dd>
         </dl>
         <fieldset class="actions">
