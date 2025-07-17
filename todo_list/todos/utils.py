@@ -26,3 +26,10 @@ def error_for_todo_item_name(todo):
             if not 1 <= len(todo) <= 100
             else None
             )
+
+def delet_todo(lst, todo):
+    lst['todos'].remove(todo)
+
+def mark_all_complete(lst):
+    for todo in lst['todos']:
+        todo['completed'] = True

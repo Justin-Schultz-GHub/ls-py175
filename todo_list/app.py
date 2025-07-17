@@ -14,6 +14,8 @@ from todos.utils import (
                         find_list_by_id,
                         error_for_todo_item_name,
                         find_todo_by_id,
+                        delet_todo,
+                        mark_all_complete,
                         )
 
 app = Flask(__name__)
@@ -116,9 +118,22 @@ def delete_todo_item(list_id, todo_id):
     if not todo:
         abort(404)
 
-    lst['todos'].remove(todo)
+    delet_todo(lst, todo)
 
     flash('Todo item successfully deleted.', 'success')
+    session.modified = True
+
+    return redirect(url_for('display_list', list_id=list_id))
+
+@app.route('/lists/<list_id>/complete_all', methods=['POST'])
+def complete_all_todos(list_id):
+    lst = find_list_by_id(list_id, session['lists'])
+    if not lst:
+        abort(404)
+
+    mark_all_complete(lst)
+
+    flash('Todo marked as completed.', 'success')
     session.modified = True
 
     return redirect(url_for('display_list', list_id=list_id))
