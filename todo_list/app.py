@@ -106,5 +106,22 @@ def toggle_todo_completion(list_id, todo_id):
 
     return redirect(url_for('display_list', list_id=list_id))
 
+@app.route('/lists/<list_id>/todos/<todo_id>/delete', methods=['POST'])
+def delete_todo_item(list_id, todo_id):
+    lst = find_list_by_id(list_id, session['lists'])
+    if not lst:
+        abort(404)
+
+    todo = find_todo_by_id(todo_id, lst['todos'])
+    if not todo:
+        abort(404)
+
+    lst['todos'].remove(todo)
+
+    flash('Todo item successfully deleted.', 'success')
+    session.modified = True
+
+    return redirect(url_for('display_list', list_id=list_id))
+
 if __name__ == "__main__":
     app.run(debug=True, port=8080)
