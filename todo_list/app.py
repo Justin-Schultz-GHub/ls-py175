@@ -177,5 +177,11 @@ def rename_list(list_id):
 
     return redirect(url_for('display_list', list_id=list_id))
 
+@app.context_processor
+def todos_completed():
+    def todos_completed_count(lst):
+        return sum(1 for todo in lst['todos'] if todo['completed'])
+    return {'todos_completed_count': todos_completed_count}
+
 if __name__ == "__main__":
     app.run(debug=True, port=8080)
