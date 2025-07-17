@@ -67,6 +67,12 @@ def create_list():
 
     return redirect(url_for('get_lists'))
 
+@app.route('/lists/<list_id>/edit')
+def edit_list(list_id):
+    lst = find_list_by_id(list_id, session['lists'])
+
+    return render_template('edit_list.html', lst=lst)
+
 @app.route('/lists/<list_id>/todos', methods=['POST'])
 def create_todo(list_id):
     todo = request.form['todo'].strip()
@@ -134,6 +140,39 @@ def complete_all_todos(list_id):
     mark_all_complete(lst)
 
     flash('Todo marked as completed.', 'success')
+    session.modified = True
+
+    return redirect(url_for('display_list', list_id=list_id))
+
+@app.route('/lists/<list_id>/delete', methods=['POST'])
+def delete_list(list_id):
+    lst = find_list_by_id(list_id, session['lists'])
+    if not lst:
+        abort(404)
+
+    session['lists'].remove(lst)
+
+    flash('Todo list successfully deleted.', 'success')
+    session.modified = True
+
+    return redirect(url_for('get_lists'))
+
+@app.route('/lists/<list_id>/rename', methods=['POST'])
+def rename_list(list_id):
+    lst = find_list_by_id(list_id, session['lists'])
+    if not lst:
+        abort(404)
+
+    title = request.form['list_title'].strip()
+
+    error = error_for_list_title(title, session['lists'])
+    if error:
+        flash(error, 'error')
+        return render_template('edit_list.html', lst=lst)
+
+    lst['title'] = title
+
+    flash('Todo list successfully renamed.', 'success')
     session.modified = True
 
     return redirect(url_for('display_list', list_id=list_id))
