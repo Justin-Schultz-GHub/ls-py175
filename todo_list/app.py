@@ -11,7 +11,7 @@ from flask import (
                     url_for,
                     )
 from todos.utils import (
-                        delet_todo,
+                        delete_todo,
                         error_for_list_title,
                         error_for_todo_item_name,
                         find_list_by_id,
@@ -159,7 +159,7 @@ def toggle_todo_completion(lst, todo, list_id, todo_id):
 @app.route('/lists/<list_id>/todos/<todo_id>/delete', methods=['POST'])
 @require_todo
 def delete_todo_item(lst, todo, list_id, todo_id):
-    delet_todo(lst, todo)
+    delete_todo(lst, todo)
     flash('Todo item successfully deleted.', 'success')
     session.modified = True
 

@@ -27,7 +27,7 @@ def error_for_todo_item_name(todo):
             else None
             )
 
-def delet_todo(lst, todo):
+def delete_todo(lst, todo):
     lst['todos'].remove(todo)
 
 def mark_all_complete(lst):
