@@ -413,3 +413,26 @@ form fieldset.actions a:hover {
 #todos > ul li.complete .check {
   background: transparent url("../images/icon_check.png") 50% 50% no-repeat;
 }
+
+.move-buttons {
+  position: absolute;
+  right: 60px;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 0.5em;
+}
+
+.move-buttons button {
+  font-size: 1.2rem;
+  color: #333;
+  background: #eee;
+  border: 1px solid #ccc;
+  padding: 0.2em 0.5em;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+
+.move-buttons button:hover {
+  background: #ddd;
+}

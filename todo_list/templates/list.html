@@ -27,6 +27,10 @@
                         <button type="submit">Complete</button>
                     </form>
                     <h3>{{ todo['title'] }}</h3>
+                    <form action="{{ url_for('reorder_todo_item', list_id=lst.id, todo_id=todo.id) }}" method="post" class="move-buttons">
+                        <button type="submit" name="direction" value="up">↑</button>
+                        <button type="submit" name="direction" value="down">↓</button>
+                    </form>
                     <form class="delete"
                         action="{{ url_for('delete_todo_item', list_id=lst.id, todo_id=todo.id) }}"
                         method="post">

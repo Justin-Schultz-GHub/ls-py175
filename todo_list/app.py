@@ -22,6 +22,12 @@ from todos.utils import (
 app = Flask(__name__)
 app.secret_key='secret1'
 
+# Helper functions
+def ensure_todo_positions(lst):
+    for index, todo in enumerate(lst['todos']):
+        todo['position'] = index
+
+# Routes
 @app.before_request
 def initialize_session():
     if 'lists' not in session:
@@ -38,11 +44,12 @@ def add_todo_list():
 @app.route('/lists/<list_id>')
 def display_list(list_id):
     lst = find_list_by_id(list_id, session['lists'])
+    if not lst:
+        abort(404)
 
-    if lst:
-        return render_template('list.html', lst=lst)
+    ensure_todo_positions(lst)
 
-    abort(404)
+    return render_template('list.html', lst=lst)
 
 @app.route('/lists')
 def get_lists():
@@ -72,6 +79,7 @@ def create_list():
 @app.route('/lists/<list_id>/edit')
 def edit_list(list_id):
     lst = find_list_by_id(list_id, session['lists'])
+    ensure_todo_positions(lst)
 
     return render_template('edit_list.html', lst=lst)
 
@@ -83,6 +91,8 @@ def create_todo(list_id):
     if not lst:
         abort(404)
 
+    ensure_todo_positions(lst)
+
     error = error_for_todo_item_name(todo)
     if error:
         flash(error, 'error')
@@ -91,7 +101,8 @@ def create_todo(list_id):
     lst['todos'].append({
         'id': str(uuid4()),
         'title': todo,
-        'completed': False
+        'completed': False,
+        'position': len(lst['todos']) + 1,
         })
 
     flash('The todo item has been created.', 'success')
@@ -99,11 +110,43 @@ def create_todo(list_id):
 
     return redirect(url_for('display_list', list_id=lst['id']))
 
+@app.route('/lists/<list_id>/todos/<todo_id>/move', methods=['POST'])
+def reorder_todo_item(list_id, todo_id):
+    lst = find_list_by_id(list_id, session['lists'])
+    if not lst:
+        abort(404)
+
+    ensure_todo_positions(lst)
+
+    for index, todo in enumerate(lst['todos']):
+        if 'position' not in todo:
+            todo['position'] = index
+
+    todo = find_todo_by_id(todo_id, lst['todos'])
+    position = todo['position']
+    direction = request.form['direction']
+    swap_position = position + 1 if direction == 'down' else position - 1
+    swap_todo = None
+
+    for todo_item in lst['todos']:
+        if todo_item['position'] == swap_position:
+            swap_todo = todo_item
+
+    if swap_todo:
+        todo['position'], swap_todo['position'] = swap_todo['position'], todo['position']
+
+    lst['todos'].sort(key=lambda todo: todo['position'])
+    session.modified = True
+
+    return redirect(url_for('display_list', list_id=list_id))
+
 @app.route('/lists/<list_id>/todos/<todo_id>/toggle', methods=['POST'])
 def toggle_todo_completion(list_id, todo_id):
     lst = find_list_by_id(list_id, session['lists'])
     if not lst:
         abort(404)
+
+    ensure_todo_positions(lst)
 
     todo = find_todo_by_id(todo_id, lst['todos'])
     if not todo:
@@ -122,6 +165,8 @@ def delete_todo_item(list_id, todo_id):
     if not lst:
         abort(404)
 
+    ensure_todo_positions(lst)
+
     todo = find_todo_by_id(todo_id, lst['todos'])
     if not todo:
         abort(404)
@@ -139,6 +184,7 @@ def complete_all_todos(list_id):
     if not lst:
         abort(404)
 
+    ensure_todo_positions(lst)
     mark_all_complete(lst)
 
     flash('Todo marked as completed.', 'success')
@@ -152,6 +198,7 @@ def delete_list(list_id):
     if not lst:
         abort(404)
 
+    ensure_todo_positions(lst)
     session['lists'].remove(lst)
 
     flash('Todo list successfully deleted.', 'success')
@@ -165,6 +212,7 @@ def rename_list(list_id):
     if not lst:
         abort(404)
 
+    ensure_todo_positions(lst)
     title = request.form['list_title'].strip()
 
     error = error_for_list_title(title, session['lists'])
@@ -179,6 +227,7 @@ def rename_list(list_id):
 
     return redirect(url_for('display_list', list_id=list_id))
 
+# Context processors
 @app.context_processor
 def todos_completed():
     def todos_completed_count(lst):
