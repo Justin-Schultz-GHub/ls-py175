@@ -10,12 +10,13 @@ from flask import (
                     url_for,
                     )
 from todos.utils import (
-                        error_for_list_title,
-                        find_list_by_id,
-                        error_for_todo_item_name,
-                        find_todo_by_id,
                         delet_todo,
+                        error_for_list_title,
+                        error_for_todo_item_name,
+                        find_list_by_id,
+                        find_todo_by_id,
                         mark_all_complete,
+                        sort_todo_lists,
                         )
 
 app = Flask(__name__)
@@ -45,7 +46,8 @@ def display_list(list_id):
 
 @app.route('/lists')
 def get_lists():
-    return render_template('lists.html', lists=session['lists'])
+    lists = sort_todo_lists(session['lists'])
+    return render_template('lists.html', lists=lists)
 
 @app.route('/lists', methods=['POST'])
 def create_list():
