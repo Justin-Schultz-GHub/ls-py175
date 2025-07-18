@@ -1,4 +1,5 @@
 from uuid import uuid4
+from functools import wraps
 from flask import (
                     abort,
                     flash,
@@ -27,6 +28,30 @@ def ensure_todo_positions(lst):
     for index, todo in enumerate(lst['todos']):
         todo['position'] = index
 
+def require_list(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        list_id = kwargs.get('list_id')
+        lst = find_list_by_id(list_id, session['lists'])
+        if not lst:
+            abort(404)
+
+        return f(lst=lst, *args, **kwargs)
+
+    return decorated_function
+
+def require_todo(f):
+    @wraps(f)
+    @require_list
+    def decorated_function(lst, *args, **kwargs):
+        todo_id = kwargs.get('todo_id')
+        todo = find_todo_by_id(todo_id, lst['todos'])
+        if not todo:
+            abort(404)
+        return f(lst=lst, todo=todo, *args, **kwargs)
+
+    return decorated_function
+
 # Routes
 @app.before_request
 def initialize_session():
@@ -42,11 +67,8 @@ def add_todo_list():
     return render_template('new_list.html')
 
 @app.route('/lists/<list_id>')
-def display_list(list_id):
-    lst = find_list_by_id(list_id, session['lists'])
-    if not lst:
-        abort(404)
-
+@require_list
+def display_list(lst, list_id):
     ensure_todo_positions(lst)
 
     return render_template('list.html', lst=lst)
@@ -84,12 +106,9 @@ def edit_list(list_id):
     return render_template('edit_list.html', lst=lst)
 
 @app.route('/lists/<list_id>/todos', methods=['POST'])
-def create_todo(list_id):
+@require_list
+def create_todo(lst, list_id):
     todo = request.form['todo'].strip()
-
-    lst = find_list_by_id(list_id, session['lists'])
-    if not lst:
-        abort(404)
 
     ensure_todo_positions(lst)
 
@@ -111,26 +130,13 @@ def create_todo(list_id):
     return redirect(url_for('display_list', list_id=lst['id']))
 
 @app.route('/lists/<list_id>/todos/<todo_id>/move', methods=['POST'])
-def reorder_todo_item(list_id, todo_id):
-    lst = find_list_by_id(list_id, session['lists'])
-    if not lst:
-        abort(404)
-
+@require_todo
+def reorder_todo_item(list_id, todo_id, lst=None, todo=None):
     ensure_todo_positions(lst)
-
-    for index, todo in enumerate(lst['todos']):
-        if 'position' not in todo:
-            todo['position'] = index
-
-    todo = find_todo_by_id(todo_id, lst['todos'])
     position = todo['position']
     direction = request.form['direction']
     swap_position = position + 1 if direction == 'down' else position - 1
-    swap_todo = None
-
-    for todo_item in lst['todos']:
-        if todo_item['position'] == swap_position:
-            swap_todo = todo_item
+    swap_todo = next((todo_item for todo_item in lst['todos'] if todo_item['position'] == swap_position), None)
 
     if swap_todo:
         todo['position'], swap_todo['position'] = swap_todo['position'], todo['position']
@@ -138,52 +144,30 @@ def reorder_todo_item(list_id, todo_id):
     lst['todos'].sort(key=lambda todo: todo['position'])
     session.modified = True
 
-    return redirect(url_for('display_list', list_id=list_id))
+    return redirect(url_for('display_list', list_id=lst['id']))
 
 @app.route('/lists/<list_id>/todos/<todo_id>/toggle', methods=['POST'])
-def toggle_todo_completion(list_id, todo_id):
-    lst = find_list_by_id(list_id, session['lists'])
-    if not lst:
-        abort(404)
-
+@require_todo
+def toggle_todo_completion(lst, todo, list_id, todo_id):
     ensure_todo_positions(lst)
-
-    todo = find_todo_by_id(todo_id, lst['todos'])
-    if not todo:
-        abort(404)
-
     todo['completed'] = request.form['completed'] == 'True'
-
     flash('Todo marked as completed.', 'success')
     session.modified = True
 
     return redirect(url_for('display_list', list_id=list_id))
 
 @app.route('/lists/<list_id>/todos/<todo_id>/delete', methods=['POST'])
-def delete_todo_item(list_id, todo_id):
-    lst = find_list_by_id(list_id, session['lists'])
-    if not lst:
-        abort(404)
-
-    ensure_todo_positions(lst)
-
-    todo = find_todo_by_id(todo_id, lst['todos'])
-    if not todo:
-        abort(404)
-
+@require_todo
+def delete_todo_item(lst, todo, list_id, todo_id):
     delet_todo(lst, todo)
-
     flash('Todo item successfully deleted.', 'success')
     session.modified = True
 
     return redirect(url_for('display_list', list_id=list_id))
 
 @app.route('/lists/<list_id>/complete_all', methods=['POST'])
-def complete_all_todos(list_id):
-    lst = find_list_by_id(list_id, session['lists'])
-    if not lst:
-        abort(404)
-
+@require_list
+def complete_all_todos(lst, list_id):
     ensure_todo_positions(lst)
     mark_all_complete(lst)
 
@@ -193,11 +177,8 @@ def complete_all_todos(list_id):
     return redirect(url_for('display_list', list_id=list_id))
 
 @app.route('/lists/<list_id>/delete', methods=['POST'])
-def delete_list(list_id):
-    lst = find_list_by_id(list_id, session['lists'])
-    if not lst:
-        abort(404)
-
+@require_list
+def delete_list(lst, list_id):
     ensure_todo_positions(lst)
     session['lists'].remove(lst)
 
@@ -207,11 +188,8 @@ def delete_list(list_id):
     return redirect(url_for('get_lists'))
 
 @app.route('/lists/<list_id>/rename', methods=['POST'])
-def rename_list(list_id):
-    lst = find_list_by_id(list_id, session['lists'])
-    if not lst:
-        abort(404)
-
+@require_list
+def rename_list(lst, list_id):
     ensure_todo_positions(lst)
     title = request.form['list_title'].strip()
 
