@@ -1,5 +1,6 @@
 from uuid import uuid4
 from functools import wraps
+import os
 from flask import (
                     abort,
                     flash,
@@ -213,4 +214,7 @@ def todos_completed():
     return {'todos_completed_count': todos_completed_count}
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    if os.environ.get('FLASK_ENV') == 'production':
+        app.run(debug=False)
+    else:
+        app.run(debug=True, port=8080)
