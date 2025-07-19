@@ -35,7 +35,7 @@ def mark_all_complete(lst):
         todo['completed'] = True
 
 def is_list_complete(lst):
-    return lst['todos'] and all(todo['completed'] for todo in lst['todos'])
+    return bool(lst['todos']) and all(todo['completed'] for todo in lst['todos'])
 
 def sort_todo_lists(lists):
     return sorted(lists,
