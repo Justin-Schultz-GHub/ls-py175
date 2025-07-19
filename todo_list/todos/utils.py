@@ -34,10 +34,10 @@ def mark_all_complete(lst):
     for todo in lst['todos']:
         todo['completed'] = True
 
+def is_list_complete(lst):
+    return lst['todos'] and all(todo['completed'] for todo in lst['todos'])
+
 def sort_todo_lists(lists):
-    return (sorted(lists,
-            key=(lambda lst:
-            (False if not lst['todos']
-            else all(todo['completed']
-            for todo in lst['todos']), lst['title'].capitalize())))
-            )
+    return sorted(lists,
+                key=lambda lst: (is_list_complete(lst), lst['title'].lower())
+                )
